@@ -37,7 +37,7 @@ export class Logger {
     }
 
     // It could be configurable as format in logger
-    private static stringifyReplacer(this: Any, _: string, value: Any): string | Object {
+    private static stringifyReplacer(this: Any, _: string, value: Any): Any {
         // This function can be moved into transformers
         if (Logger.isBufferLike(value)) {
             return 'Buffer';
