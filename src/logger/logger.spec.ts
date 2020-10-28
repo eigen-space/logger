@@ -38,14 +38,6 @@ describe('Logger', () => {
             expect(isLogOutputContainsString(output, `plain: "Buffer" in object: ${convertedObject}`)).toBeTruthy();
         });
 
-        it('should use default log level and format', () => {
-            Logger.appConfig.service = 'Logger';
-            setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
-            logger.debug('action', 'response', { status: 200, data: Buffer.from('stream') });
-            // eslint-disable-next-line max-len
-            expect(console.log).toBeCalledWith('2020-10-23T10:00:00.000Z; DEBUG; Logger; traceId=traceId; component=LoggerSpec; action=action; msg=log data');
-        });
-
         it('should change log level on all instances', () => {
             const logger1 = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
             const logger2 = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
