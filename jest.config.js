@@ -12,9 +12,7 @@ module.exports = {
         '<rootDir>/libs/**/*.spec.(ts|tsx)'
     ],
     setupFiles: [
-        '<rootDir>/config/jest/setup/fetch.setup.ts',
-        '<rootDir>/config/jest/setup/console.setup.ts',
-        '<rootDir>/config/jest/setup/imap.setup.ts'
+        '<rootDir>/config/jest/setup/console.setup.ts'
     ],
     setupFilesAfterEnv: [
         '<rootDir>/config/jest/env-setup/check-assertions-number.ts'
