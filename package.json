@@ -7,7 +7,8 @@
         "url": "https://github.com/eigen-space/logger"
     },
     "scripts": {
-        "build:package": "tsc",
+        "build:package": "tsc && yarn copy:assets",
+        "copy:assets": "node dev/scripts/copy-assets.js",
         "lint:code": "eslint --ext .js,.ts",
         "lint:fix": "yarn lint:code --fix",
         "lint:markdown": "node ./node_modules/@eigenspace/codestyle/scripts/markdown-lint.js",
@@ -34,6 +35,7 @@
     "devDependencies": {
         "@eigenspace/codestyle": "latest",
         "@eigenspace/commit-linter": "latest",
+        "@eigenspace/helper-scripts": "2.0.8",
         "@types/jest": "22.2.2",
         "@types/node": "14.14.5",
         "eslint": "7.9.0",

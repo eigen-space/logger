@@ -11,6 +11,7 @@ Configurable logger.
 
 * `@eigenspace/codestyle` - includes lint rules, config for typescript.
 * `@eigenspace/commit-linter` - linter for commit messages.
+* `@eigenspace/helper-scripts` - used to copy project files to build.
 * `eslint-plugin-eigenspace-script` - includes set of script linting rules and configuration for them.
 * `@types/*` - contains type definitions for specific library.
 * `jest` - testing framework to write unit specs (including snapshots).
