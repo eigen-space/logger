@@ -17,7 +17,9 @@ describe('Logger', () => {
         it('should use default log level and format', () => {
             Logger.appConfig.service = 'Logger';
             setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
+
             logger.debug('action', 'log data');
+
             // eslint-disable-next-line max-len
             expect(console.log).toBeCalledWith('2020-10-23T10:00:00.000Z; DEBUG; Logger; traceId=traceId; component=LoggerSpec; action=action; msg=log data');
         });
@@ -30,11 +32,11 @@ describe('Logger', () => {
 
         it('should format buffer by default', () => {
             const objectWithBuffer = { id: 1, data: Buffer.from('data') };
-
             logger.debug('action', 'plain:', Buffer.from('plain'), 'in object:', objectWithBuffer);
 
             const output = (console.log as Mock).mock.calls[0][0];
             const convertedObject = JSON.stringify({ id: 1, data: 'Buffer' }, null, 4);
+
             expect(isLogOutputContainsString(output, `plain: "Buffer" in object: ${convertedObject}`)).toBeTruthy();
         });
 
@@ -45,6 +47,7 @@ describe('Logger', () => {
 
             logger1.info('action', 'log data');
             logger2.error('action', 'log data');
+
             expect(console.info).toHaveBeenCalledTimes(0);
             expect(console.error).toHaveBeenCalledTimes(1);
         });
@@ -56,6 +59,7 @@ describe('Logger', () => {
 
             logger1.info('action', 'log data');
             logger2.error('action', 'log data');
+
             expect(console.info).toHaveBeenCalledWith('formatted output');
             expect(console.error).toHaveBeenCalledWith('formatted output');
         });
@@ -86,17 +90,17 @@ describe('Logger', () => {
             expect(console.info).toBeCalled();
         });
 
-        it('should log warning', () => {
+        it('should log warnings', () => {
             logger.warn('action', 'log data');
             expect(console.warn).toBeCalled();
         });
 
-        it('should log error', () => {
+        it('should log errors', () => {
             logger.error('action', 'log data');
             expect(console.error).toBeCalled();
         });
 
-        it('should log critical error', () => {
+        it('should log critical errors', () => {
             Logger.appConfig.logLevel = LogLevelType.CRITICAL;
             logger.critical('action', 'log data');
             expect(console.error).toBeCalled();
