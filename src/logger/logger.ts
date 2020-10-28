@@ -11,9 +11,8 @@ declare type Args = Any[];
 export class Logger {
     private static appLoggerConfig: AppLoggerConfig = {
         logLevel: LogLevelType.DEBUG,
-        service: '',
         format: Logger.format
-    };
+    } as AppLoggerConfig;
     private componentConfig: ComponentLoggerConfig;
 
     constructor(config: ComponentLoggerConfig) {
@@ -39,10 +38,7 @@ export class Logger {
 
     // It could be configurable as format in logger
     private static stringifyReplacer(this: Any, _: string, value: Any): string | Object {
-        if (Array.isArray(value)) {
-            return value;
-        }
-
+        // This function can be moved into transformers
         if (Logger.isBufferLike(value)) {
             return 'Buffer';
         }
@@ -120,7 +116,7 @@ export class Logger {
             date: new Date().toISOString(),
             severity,
             service: Logger.appLoggerConfig.service,
-            traceId: this.componentConfig.traceId || '',
+            traceId: this.componentConfig.traceId!,
             component: this.componentConfig.component,
             action,
             message: stringArgs.join(' ')
