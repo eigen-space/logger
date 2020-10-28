@@ -7,8 +7,8 @@
         "url": "https://github.com/eigen-space/logger"
     },
     "scripts": {
-        "build": "tsc",
-        "start": "node ./src/index.js",
+        "build:package": "tsc && yarn copy:assets",
+        "copy:assets": "node dev/scripts/copy-assets.js",
         "lint:code": "eslint --ext .js,.ts",
         "lint:fix": "yarn lint:code --fix",
         "lint:markdown": "node ./node_modules/@eigenspace/codestyle/scripts/markdown-lint.js",
@@ -16,7 +16,7 @@
         "test": "jest --passWithNoTests",
         "test:ci": "yarn test --ci --coverage",
         "deploy:publish": "node node_modules/@eigenspace/helper-scripts/scripts/ci/publish.js",
-        "hooks:pre-push": "yarn compile && yarn lint && yarn test",
+        "hooks:pre-push": "yarn build:package && yarn lint && yarn test",
         "script:update-deps-remote": "npx -p @eigenspace/helper-scripts update-deps"
     },
     "husky": {
@@ -35,7 +35,9 @@
     "devDependencies": {
         "@eigenspace/codestyle": "latest",
         "@eigenspace/commit-linter": "latest",
+        "@eigenspace/helper-scripts": "2.0.8",
         "@types/jest": "22.2.2",
+        "@types/node": "14.14.5",
         "eslint": "7.9.0",
         "eslint-plugin-eigenspace-script": "latest",
         "husky": "2.3.0",
