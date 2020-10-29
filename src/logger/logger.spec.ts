@@ -30,13 +30,28 @@ describe('Logger', () => {
             expect(isLogOutputContainsString(output, 'status: 200 data: data')).toBeTruthy();
         });
 
+        it('should display undefined arguments', () => {
+            logger.debug('action', 'data:', undefined);
+            const output = (console.log as Mock).mock.calls[0][0];
+            expect(isLogOutputContainsString(output, 'data: "undefined"')).toBeTruthy();
+        });
+
+        it('should display arrays', () => {
+            logger.debug('action', 'data:', [1, 2, 3]);
+
+            const output = (console.log as Mock).mock.calls[0][0];
+
+            const convertedObject = stringify([1, 2, 3]);
+            expect(isLogOutputContainsString(output, `data: ${convertedObject}`)).toBeTruthy();
+        });
+
         it('should format buffer by default', () => {
-            const objectWithBuffer = { id: 1, data: Buffer.from('data') };
+            const objectWithBuffer = { id: 1, data: [Buffer.from('data')] };
             logger.debug('action', 'plain:', Buffer.from('plain'), 'in object:', objectWithBuffer);
 
             const output = (console.log as Mock).mock.calls[0][0];
-            const convertedObject = JSON.stringify({ id: 1, data: 'Buffer' }, null, 4);
 
+            const convertedObject = stringify({ id: 1, data: ['Buffer'] });
             expect(isLogOutputContainsString(output, `plain: "Buffer" in object: ${convertedObject}`)).toBeTruthy();
         });
 
@@ -71,6 +86,10 @@ describe('Logger', () => {
 
         function isLogOutputContainsString(output: string, str: string): boolean {
             return output.includes(str);
+        }
+
+        function stringify(obj: Object): string {
+            return JSON.stringify(obj, null, 4);
         }
     });
 

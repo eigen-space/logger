@@ -38,6 +38,10 @@ export class Logger {
 
     // It could be configurable as format in logger
     private static stringifyReplacer(this: Any, _: string, value: Any): Any {
+        if (!value) {
+            return `${value}`;
+        }
+
         // This function can be moved into transformers
         if (Logger.isBufferLike(value)) {
             return 'Buffer';
@@ -46,7 +50,11 @@ export class Logger {
         return value;
     }
 
-    private static isBufferLike(obj: { type: string; data: number[] }): boolean {
+    private static isBufferLike(obj: Any): boolean {
+        if (typeof obj !== 'object') {
+            return false;
+        }
+
         return obj.type === 'Buffer' && Array.isArray(obj.data);
     }
 
