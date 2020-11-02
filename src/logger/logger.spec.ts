@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { Logger } from './logger';
+// noinspection ES6PreferShortImport
 import { LogLevelType } from '../enums/log-level.enum';
 import Mock = jest.Mock;
 
@@ -27,17 +28,31 @@ describe('Logger', () => {
         it('should concat log arguments in one string', () => {
             logger.debug('action', 'status:', 200, 'data:', 'data');
             const output = (console.log as Mock).mock.calls[0][0];
-            expect(isLogOutputContainsString(output, 'status: 200 data: data')).toBeTruthy();
+            expect(output).toContain('status: 200 data: data');
+        });
+
+        it('should display undefined arguments', () => {
+            logger.debug('action', 'data:', undefined);
+            const output = (console.log as Mock).mock.calls[0][0];
+            expect(output).toContain('data: "undefined"');
+        });
+
+        it('should display arrays', () => {
+            logger.debug('action', 'data:', [1, 2, 3]);
+
+            const output = (console.log as Mock).mock.calls[0][0];
+            const convertedObject = stringify([1, 2, 3]);
+            expect(output).toContain(`data: ${convertedObject}`);
         });
 
         it('should format buffer by default', () => {
-            const objectWithBuffer = { id: 1, data: Buffer.from('data') };
+            const objectWithBuffer = { id: 1, data: [Buffer.from('data')] };
+
             logger.debug('action', 'plain:', Buffer.from('plain'), 'in object:', objectWithBuffer);
 
             const output = (console.log as Mock).mock.calls[0][0];
-            const convertedObject = JSON.stringify({ id: 1, data: 'Buffer' }, null, 4);
-
-            expect(isLogOutputContainsString(output, `plain: "Buffer" in object: ${convertedObject}`)).toBeTruthy();
+            const convertedObject = stringify({ id: 1, data: ['Buffer'] });
+            expect(output).toContain(`plain: "Buffer" in object: ${convertedObject}`);
         });
 
         it('should change log level on all instances', () => {
@@ -69,41 +84,23 @@ describe('Logger', () => {
             global.Date = jest.fn(() => date);
         }
 
-        function isLogOutputContainsString(output: string, str: string): boolean {
-            return output.includes(str);
+        function stringify(obj: Object): string {
+            return JSON.stringify(obj, null, 4);
         }
     });
 
-    describe('#invoke', () => {
+    const groups = [['debug', 'log'], ['info', 'info'], ['warn', 'warn'], ['error', 'error'], ['critical', 'error']];
+    groups.forEach(group => {
+        const [loggerFunction, consoleFunction] = group;
+        describe(`#${loggerFunction}`, () => {
 
-        beforeAll(() => {
-            Logger.appConfig.logLevel = LogLevelType.DEBUG;
-        });
-
-        it('should log debug info', () => {
-            logger.debug('action', 'log data');
-            expect(console.log).toBeCalled();
-        });
-
-        it('should log base info', () => {
-            logger.info('action', 'log data');
-            expect(console.info).toBeCalled();
-        });
-
-        it('should log warnings', () => {
-            logger.warn('action', 'log data');
-            expect(console.warn).toBeCalled();
-        });
-
-        it('should log errors', () => {
-            logger.error('action', 'log data');
-            expect(console.error).toBeCalled();
-        });
-
-        it('should log critical errors', () => {
-            Logger.appConfig.logLevel = LogLevelType.CRITICAL;
-            logger.critical('action', 'log data');
-            expect(console.error).toBeCalled();
+            it('should log critical errors', () => {
+                Logger.appConfig.logLevel = LogLevelType.DEBUG;
+                // @ts-ignore
+                logger[loggerFunction]('action', 'log data');
+                // @ts-ignore
+                expect(console[consoleFunction]).toBeCalled();
+            });
         });
     });
 });

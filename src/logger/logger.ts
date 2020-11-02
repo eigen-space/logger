@@ -1,18 +1,22 @@
 import { AppLoggerConfig } from '../types/app-logger-config';
+// noinspection ES6PreferShortImport
 import { LogLevelType } from '../enums/log-level.enum';
+// noinspection ES6PreferShortImport
 import { ComponentLoggerConfig } from '../types/component-logger-config';
+// noinspection ES6PreferShortImport
 import { FormatData } from '../types/format-data';
 import { SeverityType } from '../enums/severity.enum';
+import { InitAppLoggerConfig } from '../types/init-app-logger-config';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare type Any = any;
 declare type Args = Any[];
 
 export class Logger {
-    private static appLoggerConfig: AppLoggerConfig = {
+    private static appLoggerConfig: InitAppLoggerConfig = {
         logLevel: LogLevelType.DEBUG,
         format: Logger.format
-    } as AppLoggerConfig;
+    };
     private componentConfig: ComponentLoggerConfig;
 
     constructor(config: ComponentLoggerConfig) {
@@ -36,9 +40,30 @@ export class Logger {
         return [date, severity, service, ...keyPairs].join('; ');
     }
 
-    // It could be configurable as format in logger
-    private static stringifyReplacer(this: Any, _: string, value: Any): string | Object {
-        // This function can be moved into transformers
+    // noinspection JSCommentMatchesSignature
+    /**
+     * Function that used in JSON.stringify method.
+     * Applies replacers to the value recursively.
+     *
+     * Notes:
+     * It could be configurable as format in logger.
+     *
+     * @param {any} this The whole object that is being processed.
+     * @param {string} _key Current key of the object that is being processed recursively.
+     * @param {any} value Current serialized value of the object that is being processed recursively.
+     *      Each value mey not equal to real value because
+     *      JSON.stringify() implicitly calls toJSON() serialization function if presented.
+     * @returns {any} Either the processed value or not changed value.
+     */
+    private static stringifyReplacer(this: Any, _key: string, value: Any): Any {
+        // We escape null and undefined values because the join() function replaces these values with empty string
+        //
+        // Example:
+        // [1, null, 3].join('|') will return '1||3'
+        if (value == null) {
+            return `${value}`;
+        }
+
         if (Logger.isBufferLike(value)) {
             return 'Buffer';
         }
@@ -46,15 +71,16 @@ export class Logger {
         return value;
     }
 
-    private static isBufferLike(obj: { type: string; data: number[] }): boolean {
-        return obj.type === 'Buffer' && Array.isArray(obj.data);
+    private static isBufferLike(obj: Any): boolean {
+        return obj && typeof obj === 'object' && obj.type === 'Buffer' && Array.isArray(obj.data);
     }
 
     /**
      * Method wraps console.log() function.
      *
-     * @param {string} action - closest activity that called the logger.
-     * @param {any[]} args - Array of arguments to log.
+     * @param {string} action Closest activity that called the logger.
+     * @param {string} message Message.
+     * @param {any[]} args Array of arguments to log.
      */
     debug(action: string, ...args: Args): void {
         this.invoke('log', LogLevelType.DEBUG, SeverityType.DEBUG, action, ...args);
@@ -63,8 +89,9 @@ export class Logger {
     /**
      * Method wraps console.info() function.
      *
-     * @param {string} action - closest activity that called the logger.
-     * @param {any[]} args - Array of arguments to log.
+     * @param {string} action Closest activity that called the logger.
+     * @param {string} message Message.
+     * @param {any[]} args Array of arguments to log.
      */
     info(action: string, ...args: Args): void {
         this.invoke('info', LogLevelType.INFO, SeverityType.INFO, action, ...args);
@@ -73,8 +100,9 @@ export class Logger {
     /**
      * Method wraps console.warn() function.
      *
-     * @param {string} action - closest activity that called the logger.
-     * @param {any[]} args - Array of arguments to log.
+     * @param {string} action Closest activity that called the logger.
+     * @param {string} message Message.
+     * @param {any[]} args Array of arguments to log.
      */
     warn(action: string, ...args: Args): void {
         this.invoke('warn', LogLevelType.WARNING, SeverityType.WARNING, action, ...args);
@@ -83,8 +111,9 @@ export class Logger {
     /**
      * Method wraps console.error() function.
      *
-     * @param {string} action - closest activity that called the logger.
-     * @param {any[]} args - Array of arguments to log.
+     * @param {string} action Closest activity that called the logger.
+     * @param {string} message Message.
+     * @param {any[]} args Array of arguments to log.
      */
     error(action: string, ...args: Args): void {
         this.invoke('error', LogLevelType.ERROR, SeverityType.ERROR, action, ...args);
@@ -93,8 +122,9 @@ export class Logger {
     /**
      * Method wraps console.error() function.
      *
-     * @param {string} action - closest activity that called the logger.
-     * @param {any[]} args - Array of arguments to log.
+     * @param {string} action Closest activity that called the logger.
+     * @param {string} message Message.
+     * @param {any[]} args Array of arguments to log.
      */
     critical(action: string, ...args: Args): void {
         this.invoke('error', LogLevelType.CRITICAL, SeverityType.CRITICAL, action, ...args);
@@ -107,7 +137,7 @@ export class Logger {
         action: string,
         ...args: Args
     ): void {
-        if (Logger.appLoggerConfig.logLevel! < logLevel) {
+        if (Logger.appLoggerConfig.logLevel < logLevel) {
             return;
         }
 
@@ -115,13 +145,13 @@ export class Logger {
         const formatData = {
             date: new Date().toISOString(),
             severity,
-            service: Logger.appLoggerConfig.service,
-            traceId: this.componentConfig.traceId!,
+            service: Logger.appLoggerConfig.service || 'undefined',
+            traceId: this.componentConfig.traceId || 'undefined',
             component: this.componentConfig.component,
             action,
             message: stringArgs.join(' ')
         };
-        const formattedOutput = Logger.appLoggerConfig.format!(formatData);
+        const formattedOutput = Logger.appLoggerConfig.format(formatData);
 
         // @ts-ignore
         // eslint-disable-next-line no-console

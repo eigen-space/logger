@@ -1,8 +1,4 @@
-import { LogLevelType } from '../enums/log-level.enum';
-import { FormatData } from './format-data';
+import { InitAppLoggerConfig } from './init-app-logger-config';
 
-export interface AppLoggerConfig {
-    logLevel?: LogLevelType;
-    service: string;
-    format?: (data: FormatData) => string;
+export interface AppLoggerConfig extends Partial<InitAppLoggerConfig> {
 }
