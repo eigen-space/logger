@@ -45,21 +45,6 @@ describe('Logger', () => {
             expect(output).toContain(`data: ${convertedObject}`);
         });
 
-        it('should display undefined arguments', () => {
-            logger.debug('action', 'data:', undefined);
-            const output = (console.log as Mock).mock.calls[0][0];
-            expect(isLogOutputContainsString(output, 'data: "undefined"')).toBeTruthy();
-        });
-
-        it('should display arrays', () => {
-            logger.debug('action', 'data:', [1, 2, 3]);
-
-            const output = (console.log as Mock).mock.calls[0][0];
-
-            const convertedObject = stringify([1, 2, 3]);
-            expect(isLogOutputContainsString(output, `data: ${convertedObject}`)).toBeTruthy();
-        });
-
         it('should format buffer by default', () => {
             const objectWithBuffer = { id: 1, data: [Buffer.from('data')] };
             logger.debug('action', 'plain:', Buffer.from('plain'), 'in object:', objectWithBuffer);
