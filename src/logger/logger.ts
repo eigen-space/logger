@@ -82,8 +82,8 @@ export class Logger {
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    debug(action: string, ...args: Args): void {
-        this.invoke('log', LogLevelType.DEBUG, SeverityType.DEBUG, action, ...args);
+    debug(action: string, message: string, ...args: Args): void {
+        this.invoke('log', LogLevelType.DEBUG, SeverityType.DEBUG, action, message, ...args);
     }
 
     /**
@@ -93,8 +93,8 @@ export class Logger {
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    info(action: string, ...args: Args): void {
-        this.invoke('info', LogLevelType.INFO, SeverityType.INFO, action, ...args);
+    info(action: string, message: string, ...args: Args): void {
+        this.invoke('info', LogLevelType.INFO, SeverityType.INFO, action, message, ...args);
     }
 
     /**
@@ -104,8 +104,8 @@ export class Logger {
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    warn(action: string, ...args: Args): void {
-        this.invoke('warn', LogLevelType.WARNING, SeverityType.WARNING, action, ...args);
+    warn(action: string, message: string, ...args: Args): void {
+        this.invoke('warn', LogLevelType.WARNING, SeverityType.WARNING, action, message, ...args);
     }
 
     /**
@@ -115,8 +115,8 @@ export class Logger {
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    error(action: string, ...args: Args): void {
-        this.invoke('error', LogLevelType.ERROR, SeverityType.ERROR, action, ...args);
+    error(action: string, message: string, ...args: Args): void {
+        this.invoke('error', LogLevelType.ERROR, SeverityType.ERROR, action, message, ...args);
     }
 
     /**
@@ -126,8 +126,8 @@ export class Logger {
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    critical(action: string, ...args: Args): void {
-        this.invoke('error', LogLevelType.CRITICAL, SeverityType.CRITICAL, action, ...args);
+    critical(action: string, message: string, ...args: Args): void {
+        this.invoke('error', LogLevelType.CRITICAL, SeverityType.CRITICAL, action, message, ...args);
     }
 
     private invoke(
