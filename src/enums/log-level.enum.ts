@@ -1,7 +1,7 @@
 export enum LogLevelType {
-    CRITICAL,
-    ERROR,
-    WARNING,
-    INFO,
-    DEBUG
+    CRITICAL = 'CRITICAL',
+    ERROR = 'ERROR',
+    WARNING = 'WARNING',
+    INFO = 'INFO',
+    DEBUG = 'DEBUG'
 }

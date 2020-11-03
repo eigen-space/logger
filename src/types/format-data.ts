@@ -1,6 +1,8 @@
+import { LogLevelType } from '..';
+
 export interface FormatData {
     date: string;
-    severity: string;
+    logLevel: LogLevelType;
     service: string;
     traceId: string;
     component: string;

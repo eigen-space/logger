@@ -1,58 +1,82 @@
 /* eslint-disable no-console */
 import { Logger } from './logger';
-import { LogLevelType } from '../enums/log-level.enum';
+import { LogLevelType } from '..';
 import Mock = jest.Mock;
 
 describe('Logger', () => {
-    const defaultAppConfig = { ...Logger.appConfig };
+    const defaultAppConfig = { ...Logger.appConfig, service: undefined };
     const setupAppConfig = { service: 'Logger' };
     const logger = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
 
     beforeEach(() => {
-        Logger.appConfig = { ...defaultAppConfig, ...setupAppConfig };
+        Logger.appConfig = defaultAppConfig;
     });
 
     describe('#common', () => {
 
         it('should use default log level and format', () => {
+            setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
+
+            logger.debug('action', 'log data');
+
+            const expectedOutput = '[2020-10-23T10:00:00.000Z][DEBUG][LoggerSpec][action][trace id = traceId] log data';
+            expect(console.log).toBeCalledWith(expectedOutput);
+        });
+
+        it('should not display trace id if not presented by default', () => {
+            const loggerWithoutTraceId = new Logger({ component: 'LoggerSpec' });
+            setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
+
+            loggerWithoutTraceId.debug('action', 'log data');
+
+            const expectedOutput = '[2020-10-23T10:00:00.000Z][DEBUG][LoggerSpec][action] log data';
+            expect(console.log).toBeCalledWith(expectedOutput);
+        });
+
+        it('should not display service by default', () => {
             Logger.appConfig.service = 'Logger';
             setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
 
             logger.debug('action', 'log data');
 
-            // eslint-disable-next-line max-len
-            expect(console.log).toBeCalledWith('2020-10-23T10:00:00.000Z; DEBUG; Logger; traceId=traceId; component=LoggerSpec; action=action; msg=log data');
+            expect(console.log).not.toContain('Logger');
         });
 
         it('should concat log arguments in one string', () => {
             logger.debug('action', 'status:', 200, 'data:', 'data');
             const output = (console.log as Mock).mock.calls[0][0];
-            expect(isLogOutputContainsString(output, 'status: 200 data: data')).toBeTruthy();
+            expect(output).toContain('status: 200 data: data');
         });
 
         it('should display undefined arguments', () => {
             logger.debug('action', 'data:', undefined);
             const output = (console.log as Mock).mock.calls[0][0];
-            expect(isLogOutputContainsString(output, 'data: "undefined"')).toBeTruthy();
+            expect(output).toContain('data: "undefined"');
         });
 
         it('should display arrays', () => {
             logger.debug('action', 'data:', [1, 2, 3]);
 
             const output = (console.log as Mock).mock.calls[0][0];
-
             const convertedObject = stringify([1, 2, 3]);
-            expect(isLogOutputContainsString(output, `data: ${convertedObject}`)).toBeTruthy();
+            expect(output).toContain(`data: ${convertedObject}`);
         });
 
         it('should format buffer by default', () => {
             const objectWithBuffer = { id: 1, data: [Buffer.from('data')] };
+
             logger.debug('action', 'plain:', Buffer.from('plain'), 'in object:', objectWithBuffer);
 
             const output = (console.log as Mock).mock.calls[0][0];
-
             const convertedObject = stringify({ id: 1, data: ['Buffer'] });
-            expect(isLogOutputContainsString(output, `plain: "Buffer" in object: ${convertedObject}`)).toBeTruthy();
+            expect(output).toContain(`plain: "Buffer" in object: ${convertedObject}`);
+        });
+
+        it('should display error', () => {
+            logger.debug('action', 'error occurred:', new Error('Promise rejected'));
+
+            const output = (console.log as Mock).mock.calls[0][0];
+            expect(output).toContain('error occurred: Error: Promise rejected');
         });
 
         it('should change log level on all instances', () => {
@@ -84,45 +108,49 @@ describe('Logger', () => {
             global.Date = jest.fn(() => date);
         }
 
-        function isLogOutputContainsString(output: string, str: string): boolean {
-            return output.includes(str);
-        }
-
         function stringify(obj: Object): string {
             return JSON.stringify(obj, null, 4);
         }
     });
 
-    describe('#invoke', () => {
+    describe('#get appConfig', () => {
 
-        beforeAll(() => {
-            Logger.appConfig.logLevel = LogLevelType.DEBUG;
+        it('should return config without any transformations', () => {
+            const config = { ...defaultAppConfig, ...setupAppConfig };
+            Logger.appConfig = config;
+            expect(Logger.appConfig).toEqual(config);
         });
+    });
 
-        it('should log debug info', () => {
-            logger.debug('action', 'log data');
-            expect(console.log).toBeCalled();
-        });
+    describe('#set appConfig', () => {
 
-        it('should log base info', () => {
-            logger.info('action', 'log data');
-            expect(console.info).toBeCalled();
-        });
-
-        it('should log warnings', () => {
-            logger.warn('action', 'log data');
-            expect(console.warn).toBeCalled();
-        });
-
-        it('should log errors', () => {
-            logger.error('action', 'log data');
-            expect(console.error).toBeCalled();
-        });
-
-        it('should log critical errors', () => {
+        it('should set field in config one by one', () => {
             Logger.appConfig.logLevel = LogLevelType.CRITICAL;
-            logger.critical('action', 'log data');
-            expect(console.error).toBeCalled();
+            Logger.appConfig.service = 'Some service';
+
+            expect(Logger.appConfig.logLevel).toEqual(LogLevelType.CRITICAL);
+            expect(Logger.appConfig.service).toEqual('Some service');
+        });
+
+        it('should update config with object data', () => {
+            Logger.appConfig = { logLevel: LogLevelType.ERROR, service: 'Another service' };
+            expect(Logger.appConfig.logLevel).toEqual(LogLevelType.ERROR);
+            expect(Logger.appConfig.service).toEqual('Another service');
+        });
+    });
+
+    const groups = [['debug', 'log'], ['info', 'info'], ['warn', 'warn'], ['error', 'error'], ['critical', 'error']];
+    groups.forEach(group => {
+        const [loggerFunction, consoleFunction] = group;
+        describe(`#${loggerFunction}`, () => {
+
+            it('should log critical errors', () => {
+                Logger.appConfig.logLevel = LogLevelType.DEBUG;
+                // @ts-ignore
+                logger[loggerFunction]('action', 'log data');
+                // @ts-ignore
+                expect(console[consoleFunction]).toBeCalled();
+            });
         });
     });
 });
