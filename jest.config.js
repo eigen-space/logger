@@ -2,14 +2,13 @@ module.exports = {
     clearMocks: true,
     collectCoverageFrom: [
         'src/**/*.{ts,tsx}',
-        'libs/**/*.{ts,tsx}'
+        '!src/index.js'
     ],
     coveragePathIgnorePatterns: [
         '.*\\.d\\.ts'
     ],
     testMatch: [
-        '<rootDir>/src/**/*.spec.(ts|tsx)',
-        '<rootDir>/libs/**/*.spec.(ts|tsx)'
+        '<rootDir>/src/**/*.spec.(ts|tsx)'
     ],
     setupFiles: [
         '<rootDir>/config/jest/setup/console.setup.ts'
@@ -33,5 +32,14 @@ module.exports = {
     ],
     globals: {
         'ts-jest': { tsConfig: 'tsconfig.spec.json' }
+    },
+    collectCoverage: true,
+    coverageThreshold: {
+        global: {
+            branches: 100,
+            functions: 100,
+            lines: 100,
+            statements: 100
+        }
     }
 };

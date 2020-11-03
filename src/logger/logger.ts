@@ -1,12 +1,6 @@
-import { AppLoggerConfig } from '../types/app-logger-config';
-// noinspection ES6PreferShortImport
-import { LogLevelType } from '../enums/log-level.enum';
-// noinspection ES6PreferShortImport
-import { ComponentLoggerConfig } from '../types/component-logger-config';
-// noinspection ES6PreferShortImport
-import { FormatData } from '../types/format-data';
-import { SeverityType } from '../enums/severity.enum';
 import { InitAppLoggerConfig } from '../types/init-app-logger-config';
+import { AppLoggerConfig, ComponentLoggerConfig, FormatData, LogLevelType } from '..';
+import { LOG_LEVEL_PRIORITY } from '../consts/log-level-priority';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare type Any = any;
@@ -32,12 +26,12 @@ export class Logger {
     }
 
     private static format(data: FormatData): string {
-        const { date, severity, service, message, ...rest } = data;
+        const { date, logLevel, service, message, ...rest } = data;
 
         const keyPairsObject = { ...rest, msg: message };
         // @ts-ignore
         const keyPairs = Object.keys(keyPairsObject).map(key => `${key}=${keyPairsObject[key]}`);
-        return [date, severity, service, ...keyPairs].join('; ');
+        return [date, logLevel, service, ...keyPairs].join('; ');
     }
 
     // noinspection JSCommentMatchesSignature
@@ -83,7 +77,7 @@ export class Logger {
      * @param {any[]} args Array of arguments to log.
      */
     debug(action: string, message: string, ...args: Args): void {
-        this.invoke('log', LogLevelType.DEBUG, SeverityType.DEBUG, action, message, ...args);
+        this.invoke('log', LogLevelType.DEBUG, action, message, ...args);
     }
 
     /**
@@ -94,7 +88,7 @@ export class Logger {
      * @param {any[]} args Array of arguments to log.
      */
     info(action: string, message: string, ...args: Args): void {
-        this.invoke('info', LogLevelType.INFO, SeverityType.INFO, action, message, ...args);
+        this.invoke('info', LogLevelType.INFO, action, message, ...args);
     }
 
     /**
@@ -105,7 +99,7 @@ export class Logger {
      * @param {any[]} args Array of arguments to log.
      */
     warn(action: string, message: string, ...args: Args): void {
-        this.invoke('warn', LogLevelType.WARNING, SeverityType.WARNING, action, message, ...args);
+        this.invoke('warn', LogLevelType.WARNING, action, message, ...args);
     }
 
     /**
@@ -116,7 +110,7 @@ export class Logger {
      * @param {any[]} args Array of arguments to log.
      */
     error(action: string, message: string, ...args: Args): void {
-        this.invoke('error', LogLevelType.ERROR, SeverityType.ERROR, action, message, ...args);
+        this.invoke('error', LogLevelType.ERROR, action, message, ...args);
     }
 
     /**
@@ -127,26 +121,22 @@ export class Logger {
      * @param {any[]} args Array of arguments to log.
      */
     critical(action: string, message: string, ...args: Args): void {
-        this.invoke('error', LogLevelType.CRITICAL, SeverityType.CRITICAL, action, message, ...args);
+        this.invoke('error', LogLevelType.CRITICAL, action, message, ...args);
     }
 
-    private invoke(
-        functionName: string,
-        logLevel: LogLevelType,
-        severity: SeverityType,
-        action: string,
-        ...args: Args
-    ): void {
-        if (Logger.appLoggerConfig.logLevel < logLevel) {
+    private invoke(functionName: string, logLevel: LogLevelType, action: string, ...args: Args): void {
+        const appLogLevelProperty = LOG_LEVEL_PRIORITY[Logger.appLoggerConfig.logLevel];
+        const logLevelProperty = LOG_LEVEL_PRIORITY[logLevel];
+        if (appLogLevelProperty < logLevelProperty) {
             return;
         }
 
         const stringArgs = this.stringifyArguments(args);
         const formatData = {
             date: new Date().toISOString(),
-            severity,
-            service: Logger.appLoggerConfig.service || 'undefined',
-            traceId: this.componentConfig.traceId || 'undefined',
+            logLevel,
+            service: Logger.appLoggerConfig.service!,
+            traceId: this.componentConfig.traceId!,
             component: this.componentConfig.component,
             action,
             message: stringArgs.join(' ')

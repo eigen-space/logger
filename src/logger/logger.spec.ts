@@ -1,16 +1,15 @@
 /* eslint-disable no-console */
 import { Logger } from './logger';
-// noinspection ES6PreferShortImport
-import { LogLevelType } from '../enums/log-level.enum';
+import { LogLevelType } from '..';
 import Mock = jest.Mock;
 
 describe('Logger', () => {
-    const defaultAppConfig = { ...Logger.appConfig };
+    const defaultAppConfig = { ...Logger.appConfig, service: undefined };
     const setupAppConfig = { service: 'Logger' };
     const logger = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
 
     beforeEach(() => {
-        Logger.appConfig = { ...defaultAppConfig, ...setupAppConfig };
+        Logger.appConfig = defaultAppConfig;
     });
 
     describe('#common', () => {
@@ -47,10 +46,10 @@ describe('Logger', () => {
 
         it('should format buffer by default', () => {
             const objectWithBuffer = { id: 1, data: [Buffer.from('data')] };
+
             logger.debug('action', 'plain:', Buffer.from('plain'), 'in object:', objectWithBuffer);
 
             const output = (console.log as Mock).mock.calls[0][0];
-
             const convertedObject = stringify({ id: 1, data: ['Buffer'] });
             expect(output).toContain(`plain: "Buffer" in object: ${convertedObject}`);
         });
@@ -87,6 +86,32 @@ describe('Logger', () => {
         function stringify(obj: Object): string {
             return JSON.stringify(obj, null, 4);
         }
+    });
+
+    describe('#get appConfig', () => {
+
+        it('should return config without any transformations', () => {
+            const config = { ...defaultAppConfig, ...setupAppConfig };
+            Logger.appConfig = config;
+            expect(Logger.appConfig).toEqual(config);
+        });
+    });
+
+    describe('#set appConfig', () => {
+
+        it('should set field in config one by one', () => {
+            Logger.appConfig.logLevel = LogLevelType.CRITICAL;
+            Logger.appConfig.service = 'Some service';
+
+            expect(Logger.appConfig.logLevel).toEqual(LogLevelType.CRITICAL);
+            expect(Logger.appConfig.service).toEqual('Some service');
+        });
+
+        it('should update config with object data', () => {
+            Logger.appConfig = { logLevel: LogLevelType.ERROR, service: 'Another service' };
+            expect(Logger.appConfig.logLevel).toEqual(LogLevelType.ERROR);
+            expect(Logger.appConfig.service).toEqual('Another service');
+        });
     });
 
     const groups = [['debug', 'log'], ['info', 'info'], ['warn', 'warn'], ['error', 'error'], ['critical', 'error']];

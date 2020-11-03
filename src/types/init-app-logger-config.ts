@@ -1,5 +1,4 @@
-// noinspection ES6PreferShortImport
-import { LogLevelType } from '../enums/log-level.enum';
+import { LogLevelType } from '..';
 import { FormatData } from './format-data';
 
 export interface InitAppLoggerConfig {
