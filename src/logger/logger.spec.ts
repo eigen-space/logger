@@ -15,13 +15,31 @@ describe('Logger', () => {
     describe('#common', () => {
 
         it('should use default log level and format', () => {
+            setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
+
+            logger.debug('action', 'log data');
+
+            const expectedOutput = '[2020-10-23T10:00:00.000Z][DEBUG][LoggerSpec][action][trace id = traceId] log data';
+            expect(console.log).toBeCalledWith(expectedOutput);
+        });
+
+        it('should not display trace id if not presented by default', () => {
+            const loggerWithoutTraceId = new Logger({ component: 'LoggerSpec' });
+            setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
+
+            loggerWithoutTraceId.debug('action', 'log data');
+
+            const expectedOutput = '[2020-10-23T10:00:00.000Z][DEBUG][LoggerSpec][action] log data';
+            expect(console.log).toBeCalledWith(expectedOutput);
+        });
+
+        it('should not display service by default', () => {
             Logger.appConfig.service = 'Logger';
             setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
 
             logger.debug('action', 'log data');
 
-            // eslint-disable-next-line max-len
-            expect(console.log).toBeCalledWith('2020-10-23T10:00:00.000Z; DEBUG; Logger; traceId=traceId; component=LoggerSpec; action=action; msg=log data');
+            expect(console.log).not.toContain('Logger');
         });
 
         it('should concat log arguments in one string', () => {
@@ -52,6 +70,13 @@ describe('Logger', () => {
             const output = (console.log as Mock).mock.calls[0][0];
             const convertedObject = stringify({ id: 1, data: ['Buffer'] });
             expect(output).toContain(`plain: "Buffer" in object: ${convertedObject}`);
+        });
+
+        it('should display error', () => {
+            logger.debug('action', 'error occurred:', new Error('Promise rejected'));
+
+            const output = (console.log as Mock).mock.calls[0][0];
+            expect(output).toContain('error occurred: Error: Promise rejected');
         });
 
         it('should change log level on all instances', () => {

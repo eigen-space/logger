@@ -26,12 +26,11 @@ export class Logger {
     }
 
     private static format(data: FormatData): string {
-        const { date, logLevel, service, message, ...rest } = data;
-
-        const keyPairsObject = { ...rest, msg: message };
-        // @ts-ignore
-        const keyPairs = Object.keys(keyPairsObject).map(key => `${key}=${keyPairsObject[key]}`);
-        return [date, logLevel, service, ...keyPairs].join('; ');
+        const { date, logLevel, component, action, message } = data;
+        const prefixes = [date, logLevel, component, action].map(prefix => `[${prefix}]`);
+        const traceId = data.traceId ? `[trace id = ${data.traceId}]` : '';
+        const messageDelimiter = ' ';
+        return [...prefixes, traceId, messageDelimiter, message].join('');
     }
 
     // noinspection JSCommentMatchesSignature
@@ -148,9 +147,9 @@ export class Logger {
         console[functionName](formattedOutput);
     }
 
-    private stringifyArguments(args: Args): string[] {
+    private stringifyArguments(args: Args): (string | Error)[] {
         return args.map(arg => {
-            if (typeof arg === 'string') {
+            if (typeof arg === 'string' || arg instanceof Error) {
                 return arg;
             }
 
