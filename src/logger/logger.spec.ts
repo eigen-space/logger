@@ -73,10 +73,14 @@ describe('Logger', () => {
         });
 
         it('should display error', () => {
-            logger.debug('action', 'error occurred:', new Error('Promise rejected'));
+            const customError = new Error('Promise rejected');
+            customError.stack = 'at index.js:15:3';
+
+            logger.debug('action', 'error occurred:', customError);
 
             const output = (console.log as Mock).mock.calls[0][0];
-            expect(output).toContain('error occurred: Error: Promise rejected');
+            expect(output).toContain('Promise rejected');
+            expect(output).toContain('at index.js:15:3');
         });
 
         it('should change log level on all instances', () => {

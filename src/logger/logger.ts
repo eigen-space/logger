@@ -1,6 +1,7 @@
 import { InitAppLoggerConfig } from '../types/init-app-logger-config';
 import { AppLoggerConfig, ComponentLoggerConfig, FormatData, LogLevelType } from '..';
 import { LOG_LEVEL_PRIORITY } from '../consts/log-level-priority';
+import { StringifiedError } from '../entities/stringified-error';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare type Any = any;
@@ -149,11 +150,16 @@ export class Logger {
 
     private stringifyArguments(args: Args): (string | Error)[] {
         return args.map(arg => {
-            if (typeof arg === 'string' || arg instanceof Error) {
+            if (typeof arg === 'string') {
                 return arg;
             }
 
-            return JSON.stringify(arg, Logger.stringifyReplacer, 4);
+            let formattedArg = arg;
+            if (arg instanceof Error) {
+                formattedArg = new StringifiedError(arg);
+            }
+
+            return JSON.stringify(formattedArg, Logger.stringifyReplacer, 4);
         });
     }
 }
