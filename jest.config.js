@@ -2,7 +2,7 @@ module.exports = {
     clearMocks: true,
     collectCoverageFrom: [
         'src/**/*.{ts,tsx}',
-        '!src/index.js'
+        '!src/index.ts'
     ],
     coveragePathIgnorePatterns: [
         '.*\\.d\\.ts'
