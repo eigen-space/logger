@@ -34,7 +34,6 @@ export class Logger {
         return [...prefixes, traceId, messageDelimiter, message].join('');
     }
 
-    // noinspection JSCommentMatchesSignature
     /**
      * Function that used in JSON.stringify method.
      * Applies replacers to the value recursively.
@@ -42,10 +41,10 @@ export class Logger {
      * Notes:
      * It could be configurable as format in logger.
      *
-     * @param {any} this The whole object that is being processed.
+     * @this {any} The whole object that is being processed.
      * @param {string} _key Current key of the object that is being processed recursively.
      * @param {any} value Current serialized value of the object that is being processed recursively.
-     *      Each value mey not equal to real value because
+     *      Each value may not equal to real value because
      *      JSON.stringify() implicitly calls toJSON() serialization function if presented.
      * @returns {any} Either the processed value or not changed value.
      */
@@ -148,7 +147,7 @@ export class Logger {
         console[functionName](formattedOutput);
     }
 
-    private stringifyArguments(args: Args): (string | Error)[] {
+    private stringifyArguments(args: Args): string[] {
         return args.map(arg => {
             if (typeof arg === 'string') {
                 return arg;
