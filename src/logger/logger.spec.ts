@@ -9,37 +9,40 @@ describe('Logger', () => {
     const logger = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
 
     beforeEach(() => {
-        Logger.appConfig = defaultAppConfig;
+        Logger.appConfig = { ...defaultAppConfig, ...setupAppConfig };
     });
 
     describe('#common', () => {
 
         it('should use default log level and format', () => {
             setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
+            Logger.appConfig.service = 'Logger';
 
-            logger.debug('action', 'log data');
+            logger.debug('action', 'data');
 
-            const expectedOutput = '[2020-10-23T10:00:00.000Z][DEBUG][LoggerSpec][action][trace id = traceId] log data';
-            expect(console.log).toBeCalledWith(expectedOutput);
+            const expected = '[2020-10-23T10:00:00.000Z][DEBUG][Logger][LoggerSpec][action][trace id = traceId] data';
+            expect(console.log).toBeCalledWith(expected);
         });
 
         it('should not display trace id if not presented by default', () => {
             const loggerWithoutTraceId = new Logger({ component: 'LoggerSpec' });
             setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
+            Logger.appConfig.service = 'Logger';
 
             loggerWithoutTraceId.debug('action', 'log data');
 
-            const expectedOutput = '[2020-10-23T10:00:00.000Z][DEBUG][LoggerSpec][action] log data';
-            expect(console.log).toBeCalledWith(expectedOutput);
+            const expected = '[2020-10-23T10:00:00.000Z][DEBUG][Logger][LoggerSpec][action] log data';
+            expect(console.log).toBeCalledWith(expected);
         });
 
-        it('should not display service by default', () => {
-            Logger.appConfig.service = 'Logger';
-            setCurrentDate(new Date('2020-10-23T10:00:00.000Z'));
+        it('should throw error if some fields are not specified in app config', () => {
+            Logger.appConfig.service = undefined;
 
-            logger.debug('action', 'log data');
-
-            expect(console.log).not.toContain('Logger');
+            try {
+                logger.debug('action', 'log data');
+            } catch (e) {
+                expect(e.message).toContain('service');
+            }
         });
 
         it('should concat log arguments in one string', () => {
@@ -86,7 +89,7 @@ describe('Logger', () => {
         it('should change log level on all instances', () => {
             const logger1 = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
             const logger2 = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
-            Logger.appConfig.logLevel = LogLevelType.ERROR;
+            Logger.appConfig.logLevelThreshold = LogLevelType.ERROR;
 
             logger1.info('action', 'log data');
             logger2.error('action', 'log data');
@@ -129,16 +132,16 @@ describe('Logger', () => {
     describe('#set appConfig', () => {
 
         it('should set field in config one by one', () => {
-            Logger.appConfig.logLevel = LogLevelType.CRITICAL;
+            Logger.appConfig.logLevelThreshold = LogLevelType.CRITICAL;
             Logger.appConfig.service = 'Some service';
 
-            expect(Logger.appConfig.logLevel).toEqual(LogLevelType.CRITICAL);
+            expect(Logger.appConfig.logLevelThreshold).toEqual(LogLevelType.CRITICAL);
             expect(Logger.appConfig.service).toEqual('Some service');
         });
 
         it('should update config with object data', () => {
-            Logger.appConfig = { logLevel: LogLevelType.ERROR, service: 'Another service' };
-            expect(Logger.appConfig.logLevel).toEqual(LogLevelType.ERROR);
+            Logger.appConfig = { logLevelThreshold: LogLevelType.ERROR, service: 'Another service' };
+            expect(Logger.appConfig.logLevelThreshold).toEqual(LogLevelType.ERROR);
             expect(Logger.appConfig.service).toEqual('Another service');
         });
     });
@@ -149,7 +152,7 @@ describe('Logger', () => {
         describe(`#${loggerFunction}`, () => {
 
             it('should log critical errors', () => {
-                Logger.appConfig.logLevel = LogLevelType.DEBUG;
+                Logger.appConfig.logLevelThreshold = LogLevelType.DEBUG;
                 // @ts-ignore
                 logger[loggerFunction]('action', 'log data');
                 // @ts-ignore
