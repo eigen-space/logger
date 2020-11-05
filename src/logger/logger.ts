@@ -1,4 +1,3 @@
-import { InitAppLoggerConfig } from '../types/init-app-logger-config';
 import { AppLoggerConfig, ComponentLoggerConfig, FormatData, LogLevelType } from '..';
 import { LOG_LEVEL_PRIORITY } from '../consts/log-level-priority';
 import { StringifiedError } from '../entities/stringified-error';
@@ -8,8 +7,8 @@ declare type Any = any;
 declare type Args = Any[];
 
 export class Logger {
-    private static appLoggerConfig: InitAppLoggerConfig = {
-        logLevel: LogLevelType.DEBUG,
+    private static appLoggerConfig: AppLoggerConfig = {
+        logLevelThreshold: LogLevelType.DEBUG,
         format: Logger.format
     };
     private componentConfig: ComponentLoggerConfig;
@@ -27,8 +26,8 @@ export class Logger {
     }
 
     private static format(data: FormatData): string {
-        const { date, logLevel, component, action, message } = data;
-        const prefixes = [date, logLevel, component, action].map(prefix => `[${prefix}]`);
+        const { date, logLevel, service, component, action, message } = data;
+        const prefixes = [date, logLevel, service, component, action].map(prefix => `[${prefix}]`);
         const traceId = data.traceId ? `[trace id = ${data.traceId}]` : '';
         const messageDelimiter = ' ';
         return [...prefixes, traceId, messageDelimiter, message].join('');
@@ -66,6 +65,32 @@ export class Logger {
 
     private static isBufferLike(obj: Any): boolean {
         return obj && typeof obj === 'object' && obj.type === 'Buffer' && Array.isArray(obj.data);
+    }
+
+    private static validateAppConfig(): void {
+        const invalidKeys = Object.keys(Logger.appLoggerConfig)
+            .filter(key => Logger.appLoggerConfig[key as keyof AppLoggerConfig] == null);
+        if (!invalidKeys.length) {
+            return;
+        }
+
+        const unspecifiedFields = invalidKeys.join(', ');
+        throw new Error(`You have no set these fields in app configuration: ${unspecifiedFields}`);
+    }
+
+    private static stringifyArguments(args: Args): string[] {
+        return args.map(arg => {
+            if (typeof arg === 'string') {
+                return arg;
+            }
+
+            let formattedArg = arg;
+            if (arg instanceof Error) {
+                formattedArg = new StringifiedError(arg);
+            }
+
+            return JSON.stringify(formattedArg, Logger.stringifyReplacer, 4);
+        });
     }
 
     /**
@@ -124,41 +149,29 @@ export class Logger {
     }
 
     private invoke(functionName: string, logLevel: LogLevelType, action: string, ...args: Args): void {
-        const appLogLevelProperty = LOG_LEVEL_PRIORITY[Logger.appLoggerConfig.logLevel];
-        const logLevelProperty = LOG_LEVEL_PRIORITY[logLevel];
-        if (appLogLevelProperty < logLevelProperty) {
+        Logger.validateAppConfig();
+        const appConfig = Logger.appLoggerConfig as Required<AppLoggerConfig>;
+
+        const appLogLevelPriority = LOG_LEVEL_PRIORITY[appConfig.logLevelThreshold];
+        const logLevelPriority = LOG_LEVEL_PRIORITY[logLevel];
+        if (appLogLevelPriority < logLevelPriority) {
             return;
         }
 
-        const stringArgs = this.stringifyArguments(args);
+        const stringArgs = Logger.stringifyArguments(args);
         const formatData = {
             date: new Date().toISOString(),
             logLevel,
-            service: Logger.appLoggerConfig.service!,
+            service: appConfig.service,
             traceId: this.componentConfig.traceId!,
             component: this.componentConfig.component,
             action,
             message: stringArgs.join(' ')
         };
-        const formattedOutput = Logger.appLoggerConfig.format(formatData);
+        const formattedOutput = appConfig.format(formatData);
 
         // @ts-ignore
         // eslint-disable-next-line no-console
         console[functionName](formattedOutput);
-    }
-
-    private stringifyArguments(args: Args): string[] {
-        return args.map(arg => {
-            if (typeof arg === 'string') {
-                return arg;
-            }
-
-            let formattedArg = arg;
-            if (arg instanceof Error) {
-                formattedArg = new StringifiedError(arg);
-            }
-
-            return JSON.stringify(formattedArg, Logger.stringifyReplacer, 4);
-        });
     }
 }
