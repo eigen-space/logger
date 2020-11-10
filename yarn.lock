@@ -226,10 +226,10 @@
   dependencies:
     "@eigenspace/argument-parser" "1.0.4"
 
-"@eigenspace/helper-scripts@2.0.8":
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/@eigenspace/helper-scripts/-/helper-scripts-2.0.8.tgz#be5ebec0ab4c635ab5c97d1703a3d143be4b67fb"
-  integrity sha512-m05QeVCkCHUwkhreLe00pQUMC4scS/1bgPe3hUja7zCcmHkaRMiZCGH5L8X72R9XizpWgWzx6l+l1FhRxYDBbw==
+"@eigenspace/helper-scripts@3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@eigenspace/helper-scripts/-/helper-scripts-3.0.2.tgz#5f3097531000e42c4b81838c06579566be70a775"
+  integrity sha512-+1PMLKJ4dx3lKH++Cg64wF8/6yA49mdsmJfvSFJ7OJ7QQ0Xu6Bks66yazNk1m0RRDjn8GTIeLlmtlIcwxuSqGg==
   dependencies:
     "@eigenspace/argument-parser" "1.0.2"
 
