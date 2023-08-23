@@ -20,4 +20,9 @@ export interface AppLoggerConfig {
      * Mostly this equals to project name.
      */
     service?: string;
+
+    /**
+     * A symbol that divides context to parts.
+     */
+    contextDelimiter?: string;
 }
