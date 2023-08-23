@@ -9,11 +9,12 @@ declare type Args = Any[];
 export class Logger {
     private static appLoggerConfig: AppLoggerConfig = {
         logLevelThreshold: LogLevelType.DEBUG,
-        format: Logger.format
+        format: Logger.format,
+        contextDelimiter: '/'
     };
     private componentConfig: ComponentLoggerConfig;
 
-    constructor(config: ComponentLoggerConfig) {
+    constructor(config: ComponentLoggerConfig = {}) {
         this.componentConfig = config;
     }
 
@@ -96,59 +97,59 @@ export class Logger {
     /**
      * Method wraps console.log() function.
      *
-     * @param {string} action Closest activity that called the logger.
+     * @param {string} context Closest activity that called the logger.
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    debug(action: string, message: string, ...args: Args): void {
-        this.invoke('log', LogLevelType.DEBUG, action, message, ...args);
+    debug(context: string, message: string, ...args: Args): void {
+        this.invoke('log', LogLevelType.DEBUG, context, message, ...args);
     }
 
     /**
      * Method wraps console.info() function.
      *
-     * @param {string} action Closest activity that called the logger.
+     * @param {string} context Closest activity that called the logger.
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    info(action: string, message: string, ...args: Args): void {
-        this.invoke('info', LogLevelType.INFO, action, message, ...args);
+    info(context: string, message: string, ...args: Args): void {
+        this.invoke('info', LogLevelType.INFO, context, message, ...args);
     }
 
     /**
      * Method wraps console.warn() function.
      *
-     * @param {string} action Closest activity that called the logger.
+     * @param {string} context Closest activity that called the logger.
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    warn(action: string, message: string, ...args: Args): void {
-        this.invoke('warn', LogLevelType.WARNING, action, message, ...args);
+    warn(context: string, message: string, ...args: Args): void {
+        this.invoke('warn', LogLevelType.WARNING, context, message, ...args);
     }
 
     /**
      * Method wraps console.error() function.
      *
-     * @param {string} action Closest activity that called the logger.
+     * @param {string} context Closest activity that called the logger.
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    error(action: string, message: string, ...args: Args): void {
-        this.invoke('error', LogLevelType.ERROR, action, message, ...args);
+    error(context: string, message: string, ...args: Args): void {
+        this.invoke('error', LogLevelType.ERROR, context, message, ...args);
     }
 
     /**
      * Method wraps console.error() function.
      *
-     * @param {string} action Closest activity that called the logger.
+     * @param {string} context Closest activity that called the logger.
      * @param {string} message Message.
      * @param {any[]} args Array of arguments to log.
      */
-    critical(action: string, message: string, ...args: Args): void {
-        this.invoke('error', LogLevelType.CRITICAL, action, message, ...args);
+    critical(context: string, message: string, ...args: Args): void {
+        this.invoke('error', LogLevelType.CRITICAL, context, message, ...args);
     }
 
-    private invoke(functionName: string, logLevel: LogLevelType, action: string, ...args: Args): void {
+    private invoke(functionName: string, logLevel: LogLevelType, context: string, ...args: Args): void {
         Logger.validateAppConfig();
         const appConfig = Logger.appLoggerConfig as Required<AppLoggerConfig>;
 
@@ -158,13 +159,15 @@ export class Logger {
             return;
         }
 
+        const [action, component] = context.split(appConfig.contextDelimiter).reverse();
+
         const stringArgs = Logger.stringifyArguments(args);
         const formatData = {
             date: new Date().toISOString(),
             logLevel,
             service: appConfig.service,
             traceId: this.componentConfig.traceId!,
-            component: this.componentConfig.component,
+            component: component || this.componentConfig.component || 'unknown',
             action,
             message: stringArgs.join(' ')
         };

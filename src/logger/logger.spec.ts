@@ -6,10 +6,11 @@ import Mock = jest.Mock;
 describe('Logger', () => {
     const defaultAppConfig = { ...Logger.appConfig, service: undefined };
     const setupAppConfig = { service: 'Logger' };
-    const logger = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
+    let logger: Logger;
 
     beforeEach(() => {
         Logger.appConfig = { ...defaultAppConfig, ...setupAppConfig };
+        logger = new Logger({ component: 'LoggerSpec', traceId: 'traceId' });
     });
 
     describe('#common', () => {
@@ -108,6 +109,34 @@ describe('Logger', () => {
 
             expect(console.info).toHaveBeenCalledWith('formatted output');
             expect(console.error).toHaveBeenCalledWith('formatted output');
+        });
+
+        it('should use default component placeholder if it is not defined', () => {
+            logger = new Logger();
+            Logger.appConfig.format = data => data.component;
+
+            logger.info('action', 'log data');
+
+            expect(console.info).toHaveBeenCalledWith('unknown');
+        });
+
+        it('should parse context info to get component and action using the default delimiter', () => {
+            logger = new Logger();
+            Logger.appConfig.format = ({ component, action }) => `${component}-${action}`;
+
+            logger.info('component/action', 'log data');
+
+            expect(console.info).toHaveBeenCalledWith('component-action');
+        });
+
+        it('should parse context info to get component and action using the custom delimiter', () => {
+            logger = new Logger();
+            Logger.appConfig.format = ({ component, action }) => `${component}-${action}`;
+            Logger.appConfig.contextDelimiter = '@';
+
+            logger.info('component@action', 'log data');
+
+            expect(console.info).toHaveBeenCalledWith('component-action');
         });
 
         function setCurrentDate(date: Date): void {

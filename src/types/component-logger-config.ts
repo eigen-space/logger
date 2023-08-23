@@ -1,4 +1,4 @@
 export interface ComponentLoggerConfig {
-    component: string;
+    component?: string;
     traceId?: string;
 }
