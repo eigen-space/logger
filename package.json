@@ -15,7 +15,7 @@
         "lint": "yarn lint:code . && yarn lint:markdown",
         "test": "jest --passWithNoTests",
         "test:ci": "yarn test --ci --coverage",
-        "deploy:publish": "node node_modules/@eigenspace/helper-scripts/scripts/ci/publish",
+        "deploy:publish": "npx -p @eigenspace/package-publisher publish",
         "hooks:pre-push": "yarn build && yarn lint && yarn test",
         "script:update-deps-remote": "npx -p @eigenspace/helper-scripts update-deps"
     },
