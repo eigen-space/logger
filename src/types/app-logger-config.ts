@@ -13,7 +13,7 @@ export interface AppLoggerConfig {
      * Set up by default.
      * @default Default formatter with [] symbols as a delimiter
      */
-    format?: (data: FormatData) => string;
+    format?: <T extends FormatData>(data: T) => string;
 
     /**
      * Name of the whole service.
