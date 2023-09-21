@@ -6,15 +6,15 @@ import { StringifiedError } from '../entities/stringified-error';
 declare type Any = any;
 declare type Args = Any[];
 
-export class Logger {
+export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
     private static appLoggerConfig: AppLoggerConfig = {
         logLevelThreshold: LogLevelType.DEBUG,
         format: Logger.format,
         contextDelimiter: '/'
     };
-    private componentConfig: ComponentLoggerConfig;
+    private componentConfig: C;
 
-    constructor(config: ComponentLoggerConfig = {}) {
+    constructor(config: C = {} as C) {
         this.componentConfig = config;
     }
 
@@ -71,6 +71,7 @@ export class Logger {
     private static validateAppConfig(): void {
         const invalidKeys = Object.keys(Logger.appLoggerConfig)
             .filter(key => Logger.appLoggerConfig[key as keyof AppLoggerConfig] == null);
+
         if (!invalidKeys.length) {
             return;
         }
@@ -163,11 +164,11 @@ export class Logger {
 
         const stringArgs = Logger.stringifyArguments(args);
         const formatData = {
+            ...this.componentConfig,
+            component: component || this.componentConfig.component || 'unknown',
             date: new Date().toISOString(),
             logLevel,
             service: appConfig.service,
-            traceId: this.componentConfig.traceId!,
-            component: component || this.componentConfig.component || 'unknown',
             action,
             message: stringArgs.join(' ')
         };

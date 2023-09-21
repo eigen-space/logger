@@ -139,6 +139,17 @@ describe('Logger', () => {
             expect(console.info).toHaveBeenCalledWith('component-action');
         });
 
+        it('should run formatter with data from the logger config', () => {
+            const customLogger = new Logger({ component: 'LoggerSpec', login: 'ivan.petrov' });
+            jest.spyOn(Logger.appConfig, 'format');
+
+            customLogger.info('action', 'log data');
+
+            const [formatInput] = (Logger.appConfig.format as jest.Mock).mock.calls[0];
+            expect(formatInput.login).toBe('ivan.petrov');
+            expect(formatInput.component).toBe('LoggerSpec');
+        });
+
         function setCurrentDate(date: Date): void {
             // @ts-ignore
             global.Date = jest.fn(() => date);
