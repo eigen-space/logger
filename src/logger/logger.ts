@@ -14,7 +14,7 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
     };
     private componentConfig: C;
 
-    constructor(config: C) {
+    constructor(config: C = {} as C) {
         this.componentConfig = config;
     }
 
