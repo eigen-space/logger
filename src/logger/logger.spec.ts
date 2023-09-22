@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import { Logger } from './logger';
-import { LogLevelType } from '..';
+import { ComponentLoggerConfig, LogLevelType } from '..';
 import Mock = jest.Mock;
 
 describe('Logger', () => {
@@ -186,6 +186,19 @@ describe('Logger', () => {
         });
     });
 
+    describe('#updateConfig', () => {
+        it('should add updated config to log data', () => {
+            const customLogger = new Logger<SpecUpdateConfig>({ component: 'LoggerSpec' });
+            jest.spyOn(Logger.appConfig, 'format');
+
+            customLogger.updateConfig({ login: 'ivan.petrov' });
+            customLogger.info('action', 'log data');
+
+            const [formatInput] = (Logger.appConfig.format as jest.Mock).mock.calls[0];
+            expect(formatInput.login).toBe('ivan.petrov');
+        });
+    });
+
     const groups = [['debug', 'log'], ['info', 'info'], ['warn', 'warn'], ['error', 'error'], ['critical', 'error']];
     groups.forEach(group => {
         const [loggerFunction, consoleFunction] = group;
@@ -201,3 +214,7 @@ describe('Logger', () => {
         });
     });
 });
+
+interface SpecUpdateConfig extends ComponentLoggerConfig {
+    login?: string;
+}

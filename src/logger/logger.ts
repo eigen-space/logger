@@ -95,6 +95,10 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
         });
     }
 
+    updateConfig(config: Partial<C>): void {
+        this.componentConfig = { ...this.componentConfig, ...config };
+    }
+
     /**
      * Method wraps console.log() function.
      *
