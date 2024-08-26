@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { Logger } from './logger';
+import { Logger, LogParams } from './logger';
 import { ComponentLoggerConfig, LogLevelType } from '..';
 import Mock = jest.Mock;
 
@@ -199,6 +199,21 @@ describe('Logger', () => {
         });
     });
 
+    describe('#log', () => {
+        it('should add extra attributes to message', () => {
+            logger = new Logger();
+            Logger.appConfig.format = data => (data as unknown as SpecLogFormatData).url;
+
+            logger.log({ ...createDefaultAttributes(), url: 'https://github.com/eigen-space' });
+
+            expect(console.info).toBeCalledWith('https://github.com/eigen-space');
+        });
+
+        function createDefaultAttributes(): LogParams {
+            return { context: 'run', logLevel: LogLevelType.INFO, message: 'the run is successful' };
+        }
+    });
+
     const groups = [['debug', 'log'], ['info', 'info'], ['warn', 'warn'], ['error', 'error'], ['critical', 'error']];
     groups.forEach(group => {
         const [loggerFunction, consoleFunction] = group;
@@ -217,4 +232,8 @@ describe('Logger', () => {
 
 interface SpecUpdateConfig extends ComponentLoggerConfig {
     login?: string;
+}
+
+interface SpecLogFormatData {
+    url: string;
 }
