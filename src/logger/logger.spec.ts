@@ -21,7 +21,7 @@ describe('Logger', () => {
 
             logger.debug('action', 'data');
 
-            const expected = '[2020-10-23T10:00:00.000Z][DEBUG][Logger][LoggerSpec][action][trace id = traceId] data';
+            const expected = '[2020-10-23T10:00:00.000Z][DEBUG][Logger][LoggerSpec][action][traceId = traceId] data';
             expect(console.log).toBeCalledWith(expected);
         });
 
@@ -207,6 +207,11 @@ describe('Logger', () => {
             logger.log({ ...createDefaultAttributes(), url: 'https://github.com/eigen-space' });
 
             expect(console.info).toBeCalledWith('https://github.com/eigen-space');
+        });
+
+        it('should add extra attributes to default formatter', () => {
+            logger.log({ ...createDefaultAttributes(), url: 'https://github.com/eigen-space' });
+            expect(console.info).toBeCalledWith(expect.stringContaining('[url = https://github.com/eigen-space]'));
         });
 
         function createDefaultAttributes(): LogParams {

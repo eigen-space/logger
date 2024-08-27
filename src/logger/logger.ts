@@ -28,11 +28,11 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
     }
 
     private static format(data: FormatData): string {
-        const { date, logLevel, service, component, action, message } = data;
+        const { date, logLevel, service, component, action, message, ...other } = data;
         const prefixes = [date, logLevel, service, component, action].map(prefix => `[${prefix}]`);
-        const traceId = data.traceId ? `[trace id = ${data.traceId}]` : '';
+        const customPrefixes = Object.entries(other).map(([key, value]) => `[${key} = ${value}]`);
         const messageDelimiter = ' ';
-        return [...prefixes, traceId, messageDelimiter, message].join('');
+        return [...prefixes, ...customPrefixes, messageDelimiter, message].join('');
     }
 
     /**
