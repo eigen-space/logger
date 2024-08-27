@@ -1,6 +1,7 @@
 import { AppLoggerConfig, ComponentLoggerConfig, FormatData, LogLevelType } from '..';
 import { LOG_LEVEL_PRIORITY } from '../consts/log-level-priority';
 import { StringifiedError } from '../entities/stringified-error';
+import { LOG_LEVEL_TO_FUNCTION_NAME } from '../consts/log-level-to-function-name';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare type Any = any;
@@ -107,7 +108,7 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
      * @param {any[]} args Array of arguments to log.
      */
     debug(context: string, message: string, ...args: Args): void {
-        this.invoke('log', LogLevelType.DEBUG, context, message, ...args);
+        this.log({ logLevel: LogLevelType.DEBUG, context, message, args });
     }
 
     /**
@@ -118,7 +119,7 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
      * @param {any[]} args Array of arguments to log.
      */
     info(context: string, message: string, ...args: Args): void {
-        this.invoke('info', LogLevelType.INFO, context, message, ...args);
+        this.log({ logLevel: LogLevelType.INFO, context, message, args });
     }
 
     /**
@@ -129,7 +130,7 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
      * @param {any[]} args Array of arguments to log.
      */
     warn(context: string, message: string, ...args: Args): void {
-        this.invoke('warn', LogLevelType.WARNING, context, message, ...args);
+        this.log({ logLevel: LogLevelType.WARNING, context, message, args });
     }
 
     /**
@@ -140,7 +141,7 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
      * @param {any[]} args Array of arguments to log.
      */
     error(context: string, message: string, ...args: Args): void {
-        this.invoke('error', LogLevelType.ERROR, context, message, ...args);
+        this.log({ logLevel: LogLevelType.ERROR, context, message, args });
     }
 
     /**
@@ -151,11 +152,20 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
      * @param {any[]} args Array of arguments to log.
      */
     critical(context: string, message: string, ...args: Args): void {
-        this.invoke('error', LogLevelType.CRITICAL, context, message, ...args);
+        this.log({ logLevel: LogLevelType.CRITICAL, context, message, args });
     }
 
-    private invoke(functionName: string, logLevel: LogLevelType, context: string, ...args: Args): void {
+    log<T extends LogParams>(data: T): void {
         Logger.validateAppConfig();
+
+        const {
+            logLevel,
+            context,
+            message,
+            args = [],
+            ...other
+        } = data;
+
         const appConfig = Logger.appLoggerConfig as Required<AppLoggerConfig>;
 
         const appLogLevelPriority = LOG_LEVEL_PRIORITY[appConfig.logLevelThreshold];
@@ -166,7 +176,7 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
 
         const [action, component] = context.split(appConfig.contextDelimiter).reverse();
 
-        const stringArgs = Logger.stringifyArguments(args);
+        const stringArgs = Logger.stringifyArguments([message, ...args]);
         const formatData = {
             ...this.componentConfig,
             component: component || this.componentConfig.component || 'unknown',
@@ -174,12 +184,21 @@ export class Logger<C extends ComponentLoggerConfig = ComponentLoggerConfig> {
             logLevel,
             service: appConfig.service,
             action,
-            message: stringArgs.join(' ')
+            message: stringArgs.join(' '),
+            ...other
         };
-        const formattedOutput = appConfig.format(formatData);
 
+        const formattedOutput = appConfig.format(formatData);
+        const functionName = LOG_LEVEL_TO_FUNCTION_NAME[logLevel];
         // @ts-ignore
         // eslint-disable-next-line no-console
         console[functionName](formattedOutput);
     }
+}
+
+export interface LogParams {
+    logLevel: LogLevelType;
+    context: string;
+    message: string;
+    args?: Args[];
 }
